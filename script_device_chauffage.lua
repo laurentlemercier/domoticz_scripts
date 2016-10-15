@@ -58,9 +58,9 @@ for macrochauffage in pairs(MacroChauffages) do
       for level in pairs(DomoLevels) do
          if (DEBUG) then print('Test du nivau ' .. level .. ': valeur ' .. DomoLevels[level]) end
          if (devicechanged[macrochauffage] == level ) then
-            if (DEBUG) then print ('Found mode to apply : '.. level ) end
-               for chauffage in pairs(MacroChauffages[macrochauffage]) do
-                  if (DEBUG) then print ('Application du niveau' .. level .. 'au chauffage suivant :' .. MacroChauffages[macrochauffage][chauffage]) end
+         if (DEBUG) then print ('Found mode to apply : '.. level ) end
+            for chauffage in pairs(MacroChauffages[macrochauffage]) do
+               if (DEBUG) then print ('Application du niveau' .. level .. 'au chauffage suivant :' .. MacroChauffages[macrochauffage][chauffage]) end
                if (DEBUG) then print('Applying Set Level '..tostring(DomoLevels[level])) end
                commandArray[ MacroChauffages[macrochauffage][chauffage]]='Set Level '..tostring(DomoLevels[level])
             end
