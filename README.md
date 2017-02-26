@@ -9,11 +9,13 @@ script_device_chaufffage.lua :
 		
 	On peut utiliser la même méthode pour créer des groupes de chauffage, et les commander avec des commandes groupées : par exemple http://remora/?fp=AAAAAAA	(tous les chauffages) ou http://remora/?fp=---A-A- (chauffage 4 et 6). Mais quand on clique dessus, les boutons individuels de chaque chauffage ne changent pas d'état.
 		
-	Je vous propose ici un script qui permet de gérer cela : https://github.com/laurentlemercier/domoticz_scripts
+	Je vous propose ici un script qui permet de gérer cela : https://github.com/laurentlemercier/domoticz_scripts . Le macrochauffage fait basculer l'état des chaufffages individuels, mais le changement des chauffages individuels fait aussi basculer l'état des macrochauffages (à Unused quand tous les chauffages n'ont pas le même état, à l'état partagé par tous les chauffages sinon)
 		
 	1/ dans domoticz, vous définissez vos chauffages individuels (avec les actions http), vos groupes de chauffage (macrochauffage)
 	2/ vous paramétrez le script script_device_chauffage.lua en reprenant les valeurs que vous avez définies dans Domoticz et en fonction des groupes que vous voulez créer
 	3/ vous positionnez le script script_device_chauffage.lua dans le répertoire domoticz/scripts/lua
+        4/ vous testez chaque niveau de macrochauffage afin que les variables soient créées automatiquement
+        5/ vous pouvez maintenant jouer avec les  différents chauffages et voir le basculement des différents états
 	
 	Il y a une option DEBUG dans le script qui rend les logs de Domoticz plus verbeux, utile pour la mise au point. Le script est fourni "as is", sans garantie. Je suis preneur de vos retours.
 		
