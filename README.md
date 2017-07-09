@@ -22,7 +22,11 @@ script_device_chaufffage.lua :
 	Vous pouvez ainsi utiliser la puissance de Domoticz (gestion du planning, intégration avec d'autres capteurs) et toute la puissance de Remora.
 
 		
-cript_time_checkremora.lua : 
+script_time_checkremora.lua : 
 	(EN) script in LUA in order to check/set the value of Remora board inside Domoticz 
 	(FR) script en LUA pour vérifier/repositionner les valeurs de Remora au sein de Domoticz
+        1/ vous paramétrez le script script_time_checkremora.lua en reprenant exactement le nom des devices définis dans Domoticz 
+	2/ vous positionnez le script script_time_checkremora.lua dans le répertoire domoticz/scripts/lua
+	3/ un changement d'état dans Remora est maintenant détecté au bout d'une minute par Domoticz
+
 
