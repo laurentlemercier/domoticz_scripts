@@ -1,8 +1,11 @@
 -- Gestion du chauffage
 
--- Version 1.0 du 16/10/2016
+-- Version 1.1 du 9/7/2017
+
 -- Ce script permet de vérifier l'état des chauffages dans Remora et de reporter la valeur dans Domoticz
 -- Idée originale développée ici http://domoticz.blogspot.fr/2014/07/un-exemple-de-script-lua-time-coherence.html
+
+-- Ajout d'une notification en cas de détection d'un écart
 
 -- Necessite de positionner la librairie JSON (http://regex.info/blog/lua/json) dans /home/pi/domoticz/scripts/lua
 
@@ -24,7 +27,7 @@ ListeChauffages =   {
 -- Positionner les niveaux associés des valeurs de Remora avec les niveaux dans Domoticz (on suppose que pour chaque chauffage on a decrit les memes niveaux) avec les 
 RemoraLevels = { ["A"]=0, ["H"]=10, ["E"]=20, ["C"]=30 }
 
--- Debuggage (FALSE ou 1)
+-- Debuggage (FALSE ou true)
 DEBUG=FALSE
 
 commandArray = {}
@@ -57,7 +60,11 @@ for i = 1,7,1 do
       if (DEBUG) then print("valeur cohérente entre Remora et Domoticz, pas de mise à jour de la valeur dans Domoticz pour "..ListeChauffages["fp"..i]) end
    else
       print("valeur incohérente entre Remora et Domoticz, mise à jour de la valeur dans Domoticz pour "..ListeChauffages["fp"..i]) 
+      if (DEBUG) then print ( ListeChauffages["fp"..i]..':'..'Set Level '..tostring( RemoraLevels[FilsPilotes["fp"..i]]) ) end
+      date=os.date("%Y%m%d-%X")
       commandArray[ListeChauffages["fp"..i]]='Set Level '..tostring( RemoraLevels[FilsPilotes["fp"..i]] )
+      commandArray['SendNotification']=date.." : valeur incohérente entre Remora et Domoticz, mise à jour faite  dans Domoticz pour "..ListeChauffages["fp"..i]
+
    end
 
 end
