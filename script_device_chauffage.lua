@@ -1,15 +1,16 @@
 -- Gestion du chauffage
 
--- Version 2.0 du 26/2/2017
 -- Gestion de groupes de chauffages dans Domoticz sous forme de "Dummy" interrupteurs ("Selector Switch")
 -- Pilotant des chauffages individuels disposant des mêmes défintions de niveau
 
--- Debuggage (FALSE ou 1)
--- Creer un Dummy interrupteur TestScript pour visualisation directement dans l'interface Domoticz
-DEBUG=false
+-- Version 2.1 du 30/11/2017
+-- Modification des appels command array qui paralysent domoticz
+
+-- Debuggage (FALSE ou true)
+DEBUG=FALSE
 
 -- Positionner l'adresse de Domoticz (utile pour les requêtes json de création de variables
-local ip = 'rasp-domo:8080'   -- user:pass@ip:port de domoticz
+local ip = '127.0.0.1:8080'   -- user:pass@ip:port de domoticz
 
 -- Positionner les "Macro"-chauffages tels que decrits dans Domoticz 
 -- en reprenant EXACTEMENT les libellés mis en place dans Domoticz
@@ -61,7 +62,6 @@ function evaluate_macro(chauffagemacro,statutmicro)
     for c,autrechauffage in pairs(MacroChauffages[chauffagemacro]) do 
       if (DEBUG) then print(c .. '.....' .. autrechauffage .. '... level ...' .. otherdevices_svalues[autrechauffage] ) end
       constant = constant and (otherdevices_svalues[autrechauffage]==statutmicro) 
-
     end
 
     if constant then 
@@ -101,6 +101,8 @@ end
 
 commandArray = {}
 
+print('Script fired script_device_chauffage.lua')
+
 
 if (DEBUG) then
    for deviceName,deviceValue in pairs(devicechanged) do
@@ -111,8 +113,7 @@ end
 
 for macrochauffage in pairs(MacroChauffages) do
 
-   -- if (DEBUG) then print ('Test du macrochauffage : '  .. macrochauffage ) end
-
+   if (DEBUG) then print ('Test du macrochauffage : '  .. macrochauffage ) end
 
    if (devicechanged[macrochauffage]) then 
       print ("LUA Macrochauffage '"..macrochauffage.."', value '"..devicechanged[macrochauffage].."' level '"..otherdevices_svalues[macrochauffage].."'")
@@ -123,8 +124,10 @@ for macrochauffage in pairs(MacroChauffages) do
       -- on crée dynamiquement une variable pour stocker le dernier raffraichissement du macrochauffage pour le statut donné
       if(uservariables['CHAUFF_'.. macrochauffage ..'_'.. otherdevices[macrochauffage]] == nil) then
 
-         commandArray['OpenURL']=ip..'/json.htm?type=command&param=saveuservariable&vname=CHAUFF_'..urlencode(macrochauffage)..'_'.. otherdevices[macrochauffage] ..'&vtype=2&vvalue='..urlencode(otherdevices_lastupdate[macrochauffage])
-         print('   CHAUFF : creation variable manquante CHAUFF_'..macrochauffage..'_'.. otherdevices[macrochauffage])
+          print('   CHAUFF : creation variable manquante CHAUFF_'..macrochauffage..'_'.. otherdevices[macrochauffage])
+          local cmd=ip..'/json.htm?type=command&param=saveuservariable&vname=CHAUFF_'..urlencode(macrochauffage)..'_'.. otherdevices[macrochauffage] ..'&vtype=2&vvalue='..urlencode(otherdevices_lastupdate[macrochauffage])
+	  if (DEBUG) then print (cmd) end
+          table.insert (commandArray, { ['OpenURL'] = cmd} )
  
       elseif (timedifference(uservariables['CHAUFF_'..macrochauffage..'_'..otherdevices[macrochauffage]]) < 3) then
 
@@ -143,11 +146,12 @@ for macrochauffage in pairs(MacroChauffages) do
                if ( tostring(DomoLevels[level])~=otherdevices_svalues[MacroChauffages[macrochauffage][chauffage]] ) then
    
                   if (DEBUG) then print ('...Application du niveau ' .. level .. ' au chauffage : ' .. MacroChauffages[macrochauffage][chauffage] .. ' : Set level : ' .. tostring(DomoLevels[level]) ) end
-                  -- commandArray[ MacroChauffages[macrochauffage][chauffage]]='Set Level '..tostring(DomoLevels[level])
-                  -- commandArray[ MacroChauffages[macrochauffage][chauffage]]='Set Level '..tostring(DomoLevels[level]..' AFTER 1')
-                  commandArray[ MacroChauffages[macrochauffage][chauffage]]='Set Level '..tostring(DomoLevels[level])
-   
+                  local cmd=ip..'/json.htm?type=command&param=switchlight&idx='..otherdevices_idx[MacroChauffages[macrochauffage][chauffage]]..'&switchcmd=Set%20Level&level='..DomoLevels[level]..'&passcode='
+		  if (DEBUG) then print (cmd) end
+                  table.insert (commandArray, { ['OpenURL'] = cmd} )
+
    	       else
+
                   if (DEBUG) then print ('...Niveau inchange ' .. level .. ' du chauffage : ' .. MacroChauffages[macrochauffage][chauffage]  ) end
                end
    
@@ -156,9 +160,6 @@ for macrochauffage in pairs(MacroChauffages) do
          end
 
          commandArray['Variable:CHAUFF_'..macrochauffage..'_'..otherdevices[macrochauffage]]=otherdevices_lastupdate[macrochauffage]
-
-         -- Level unused => un des chauffages n'est plus dans le level defini par macrochauffage 
-         if (DEBUG) then commandArray['TestScript']='On' end
 
       end 
    
@@ -200,8 +201,9 @@ for micro,listemacros in pairs(ChauffagesInverses) do
             if level~=otherdevices_svalues[macro] then
 
                print('Application au macro chauffage :' .. macro .. ' valeur :' .. evaluate_macro(macro,otherdevices_svalues[micro]))
-               -- commandArray[macro]='Set Level '.. tostring(level)  .. ' AFTER 2'
-               commandArray[macro]='Set Level '.. tostring(level)  
+               local cmd=ip..'/json.htm?type=command&param=switchlight&idx='..otherdevices_idx[macro]..'&switchcmd=Set%20Level&level='..level..'&passcode='
+	       if (DEBUG) then print (cmd) end
+               table.insert (commandArray, { ['OpenURL'] = cmd} )
 
             end
 
